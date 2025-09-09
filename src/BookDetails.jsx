@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import TiltedCard from "./components/TiltedCard";
+import Spinner from "./components/Spinner";
 
 const BookDetails = () => {
   const { id } = useParams(); // could be work ID or edition ID
@@ -51,11 +52,14 @@ const BookDetails = () => {
     fetchDetails();
   }, [id]);
 
-  if (loading) return <p>Loading...</p>;
+  
   if (!workData) return <p>Book details not found.</p>;
 
   return (
     <main>
+        {loading && (
+            <Spinner size={60} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        )}
       <button
         onClick={() => navigate("/")}
         className="absolute top-4 left-4 bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer sm:"
@@ -88,10 +92,10 @@ const BookDetails = () => {
           <div className="text-white space-y-6">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2">
-                {workData?.title}
+                {workData?.title ? workData?.title : "Unknown Title"}
               </h1>
               <p className="text-xl text-gray-300">
-                Author: {workData.authorNames || "Unknown"}
+                Author: {workData?.authorNames ? workData.authorNames: "Unknown"}
               </p>
             </div>
 
@@ -102,7 +106,7 @@ const BookDetails = () => {
                   <span>⭐</span>
                 </div>
                 <span className="text-gray-300">
-                  {(workData.averageRating || "N/A").toFixed(1)} / 5
+                  {workData?.averageRating ? workData.averageRating.toFixed(1) : "N/A"} / 5
                 </span>
               </div>
               <span className="bg-blue-600 px-3 py-1 rounded-full text-sm">
@@ -122,13 +126,13 @@ const BookDetails = () => {
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Publish-Date</h3>
                 <p className="text-white">
-                  {workData?.first_publish_date || "N/A"}
+                  {workData?.first_publish_date ? workData?.first_publish_date : "N/A"}
                 </p>
               </div>
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Time Period</h3>
                 <p className="text-white">
-                  {workData?.subject_times[0] || "N/A"}
+                  {workData?.subject_times ? workData?.subject_times[0] : "N/A"}
                 </p>
               </div>
               <div>
