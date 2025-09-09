@@ -54,34 +54,38 @@ const Home = () => {
           seterrorMsg(""); // Clear any previous errors
         }
       } else {
-        // 📚 Fetch subject-wise results
-        console.log("Fetching subjects..."); // Debug log
-        let result = {};
-        const failedSubjects = [];
-
-        for (let subject of subjects) {
+        console.log("Fetching subjects...");
+        const subjectPromises = subjects.map(async (subject) => {
           try {
             const endpoint = `https://openlibrary.org/subjects/${subject}.json?details=true&limit=10`;
             const response = await fetch(endpoint);
 
             if (!response.ok) {
-              console.warn(`Failed to fetch ${subject}: ${response.status}`);
-              failedSubjects.push(subject);
-              continue;
+              throw new Error(`Failed to fetch ${subject}: ${response.status}`);
             }
 
             const data = await response.json();
-            result[subject] = data.works || [];
-
-            // Add delay between requests
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          } catch (subjectError) {
-            console.error(`Error fetching ${subject}:`, subjectError);
-            failedSubjects.push(subject);
+            return { subject, works: data.works || [] };
+          } catch (err) {
+            console.error(`Error fetching ${subject}:`, err);
+            return { subject, works: [], error: true };
           }
-        }
+        });
 
-        setBooksBySubject(result);
+        const results = await Promise.allSettled(subjectPromises);
+
+        const resultObj = {};
+        const failedSubjects = [];
+
+        results.forEach((res) => {
+          if (res.status === "fulfilled") {
+            const { subject, works, error } = res.value;
+            resultObj[subject] = works;
+            if (error) failedSubjects.push(subject);
+          }
+        });
+
+        setBooksBySubject(resultObj);
 
         if (failedSubjects.length > 0) {
           seterrorMsg(
