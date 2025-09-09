@@ -15,15 +15,32 @@ const BookDetails = () => {
         const workRes = await fetch(`https://openlibrary.org/works/${id}.json`);
         if (workRes.ok) {
           const workJson = await workRes.json();
-          setWorkData(workJson);
+          const authorKeys = workJson.authors.map((a) => a.author.key);
+          const authorNames = await Promise.all(
+            authorKeys.map(async (key) => {
+              const res = await fetch(`https://openlibrary.org${key}.json`);
+              if (res.ok) {
+                const data = await res.json();
+                return data.name;
+              }
+              return "Unknown Author";
+            })
+          );
+          if (authorNames) {
+            setWorkData({ ...workJson, authorNames });
+          } else {
+            setWorkData(workJson);
+          }
         }
 
-        // Also fetch edition-level data
-        const edRes = await fetch(`https://openlibrary.org/books/${id}.json`);
-        if (edRes.ok) {
-          const edJson = await edRes.json();
-          setEditionData(edJson);
+        
+
+        const rating = await fetch( `https://openlibrary.org/works/${id}/ratings.json` );
+        if (rating.ok) {
+          const ratingJson = await rating.json();
+          console.log("Rating Data:", ratingJson);
         }
+
       } catch (err) {
         console.error("Error loading book data:", err);
       } finally {
@@ -42,7 +59,7 @@ const BookDetails = () => {
       <div className="book-details p-4 text-white">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-start">
           {/* Left Column - Book Cover */}
-          <div className="flex items-center lg:justify-start justify-center">
+          <div className="flex items-center w-full lg:justify-center justify-center">
             <img
               src={
                 editionData?.covers
@@ -54,15 +71,14 @@ const BookDetails = () => {
               alt={workData?.title || editionData?.title}
             />
           </div>
-        </div>
-         {/* Right Column - Book Details */}
+          {/* Right Column - Book Details */}
           <div className="text-white space-y-6">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2">
-                Debt-The First 5000 Years
+                {workData?.title || editionData?.title}
               </h1>
               <p className="text-xl text-gray-300">
-                by David Gran
+                Author: {workData.authorNames || "Unknown"}
               </p>
             </div>
 
@@ -70,10 +86,8 @@ const BookDetails = () => {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 {/* Placeholder for stars */}
-                <div className="flex gap-1">
-                  {[1,2,3,4,5].map((star) => (
-                    <div key={star} className="w-5 h-5 bg-yellow-400 rounded-sm"></div>
-                  ))}
+                <div className="flex gap-1 items-center w-5">
+                  <span>⭐</span>
                 </div>
                 <span className="text-gray-300">4/5</span>
               </div>
@@ -85,18 +99,19 @@ const BookDetails = () => {
             {/* Description */}
             <div className="space-y-4 text-gray-300 leading-relaxed">
               <p>
-                In a French duchy, the old Duke has been usurped by his younger 
-                brother, Frederick. A young man named Orlando is mistreated by his 
-                elder brother, against their dead father's wishes. Rosalind, the old 
-                Duke's daughter, has been allowed to remain in court only
+                In a French duchy, the old Duke has been usurped by his younger
+                brother, Frederick. A young man named Orlando is mistreated by
+                his elder brother, against their dead father's wishes. Rosalind,
+                the old Duke's daughter, has been allowed to remain in court
+                only
               </p>
               <p>
-                because she is the closest friend of Celia, Duke Frederick's daughter. 
-                When Rosalind is banished from court, she flees to the Forest of 
-                Arden with Celia and Touchstone, the court fool; meanwhile, Orlando 
-                also escapes to the forest, fleeing his brother. In the Forest of Arden, 
-                the old Duke holds court with exiled supporters, including the 
-                melancholy
+                because she is the closest friend of Celia, Duke Frederick's
+                daughter. When Rosalind is banished from court, she flees to the
+                Forest of Arden with Celia and Touchstone, the court fool;
+                meanwhile, Orlando also escapes to the forest, fleeing his
+                brother. In the Forest of Arden, the old Duke holds court with
+                exiled supporters, including the melancholy
               </p>
             </div>
 
@@ -116,39 +131,9 @@ const BookDetails = () => {
               </div>
             </div>
           </div>
+        </div>
       </div>
     </main>
   );
 };
 export default BookDetails;
-
-// <div className="book-details">
-
-//   {/* Title / Subtitle */}
-//   <h1>{workData?.title || editionData?.title}</h1>
-//   {editionData?.subtitle && <h2>{editionData.subtitle}</h2>}
-
-//   <img
-//     src={
-//       editionData?.covers
-//         ? `https://covers.openlibrary.org/b/id/${editionData.covers[0]}-L.jpg`
-//         : workData?.covers
-//         ? `https://covers.openlibrary.org/b/id/${workData.covers[0]}-L.jpg`
-//         : '/No-Poster.png'
-//     }
-//     alt={workData?.title || editionData?.title}
-//   />
-
-//   {/* Description */}
-//   <p className='text-white'>{workData?.description?.value || workData?.description || editionData?.description || 'No description available'}</p>
-
-//   {/* Additional details from edition */}
-//   <p className='text-white'><strong>Publisher:</strong> {editionData?.publishers?.join(', ') || "unknown"}</p>
-//   <p className='text-white'><strong>Publish Date:</strong> {editionData?.publish_date || {workData?.}}</p>
-//   <p className='text-white'><strong>Pages:</strong> {editionData?.number_of_pages || 'Unknown'}</p>
-//   <p className='text-white'><strong>Identifiers (ISBN):</strong> {editionData?.identifiers?.isbn_10?.join(', ') || 'N/A'}</p>
-//   <p className='text-white'><strong>Subjects:</strong> {workData?.subjects?.slice(0,5).join(', ') || 'N/A'}</p>
-
-//   {/* Back button */}
-//   <button onClick={() => navigate(-1)}>Back</button>
-// </div>

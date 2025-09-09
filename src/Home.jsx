@@ -9,7 +9,7 @@ const Home = () => {
     "fantasy",
     "science_fiction",
     "kids_books",
-    "history",
+    "poetry",
     "programming",
   ];
 
