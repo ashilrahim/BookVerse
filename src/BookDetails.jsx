@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import TiltedCard from "./components/TiltedCard";
 
 const BookDetails = () => {
   const { id } = useParams(); // could be work ID or edition ID
@@ -55,7 +56,7 @@ const BookDetails = () => {
 
   return (
     <main>
-        <button
+      <button
         onClick={() => navigate("/")}
         className="absolute top-4 left-4 bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer sm:"
       >
@@ -64,14 +65,23 @@ const BookDetails = () => {
       <div className="book-details p-4 text-white max-sm:py-20 ">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-start">
           {/* Left Column - Book Cover */}
-          <div className="flex items-center w-full lg:justify-center justify-center">
-            <img
-              src={
+          <div className="flex justify-center lg:justify-center items-center min-h-full">
+            <TiltedCard
+              imageSrc={
                 workData?.covers
                   ? `https://covers.openlibrary.org/b/id/${workData.covers[0]}-L.jpg`
                   : "/No-Poster.png"
               }
-              alt={workData?.title}
+              altText={workData?.title || "Book Cover"}
+              containerHeight="300px"
+              containerWidth="300px"
+              imageHeight="300px"
+              imageWidth="300px"
+              rotateAmplitude={12}
+              scaleOnHover={1.2}
+              showMobileWarning={false}
+              showTooltip={true}
+              displayOverlayContent={true}
             />
           </div>
           {/* Right Column - Book Details */}
@@ -102,18 +112,24 @@ const BookDetails = () => {
 
             {/* Description */}
             <div className="space-y-4 text-gray-300 leading-relaxed">
-              <p>{workData?.description?.value || "No description available."}</p>
+              <p>
+                {workData?.description?.value || "No description available."}
+              </p>
             </div>
 
             {/* Metadata */}
             <div className="grid grid-cols-3 gap-8 pt-6 border-t border-gray-700">
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Publish-Date</h3>
-                <p className="text-white">{workData?.first_publish_date || "N/A"}</p>
+                <p className="text-white">
+                  {workData?.first_publish_date || "N/A"}
+                </p>
               </div>
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Time Period</h3>
-                <p className="text-white">{workData?.subject_times[0] || "N/A"}</p>
+                <p className="text-white">
+                  {workData?.subject_times[0] || "N/A"}
+                </p>
               </div>
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Language</h3>
